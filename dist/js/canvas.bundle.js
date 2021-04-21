@@ -97,69 +97,94 @@
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils */ "./src/js/utils.js");
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_utils__WEBPACK_IMPORTED_MODULE_0__);
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-
-var canvas = document.querySelector('canvas');
-var c = canvas.getContext('2d');
+var canvas = document.querySelector("canvas");
+var c = canvas.getContext("2d");
 canvas.width = innerWidth;
 canvas.height = innerHeight;
 var mouse = {
   x: innerWidth / 2,
   y: innerHeight / 2
 };
-var colors = ['#2185C5', '#7ECEFD', '#FFF6E5', '#FF7F66']; // Event Listeners
+var colors = ["#2185C5", "#7ECEFD", "#FFF6E5", "#FF7F66"]; // Event Listeners
 
-addEventListener('mousemove', function (event) {
+addEventListener("mousemove", function (event) {
   mouse.x = event.clientX;
   mouse.y = event.clientY;
 });
-addEventListener('resize', function () {
+addEventListener("resize", function () {
   canvas.width = innerWidth;
   canvas.height = innerHeight;
   init();
 }); // Objects
 
-var _Object = /*#__PURE__*/function () {
-  function Object(x, y, radius, color) {
-    _classCallCheck(this, Object);
+function Particle(x, y, radius, color) {
+  var _this = this;
 
-    this.x = x;
-    this.y = y;
-    this.radius = radius;
-    this.color = color;
-  }
+  this.x = x;
+  this.y = y;
+  this.velocity = {
+    x: Math.random() - 0.5,
+    y: Math.random() - 0.5
+  };
+  this.radius = radius;
+  this.color = color;
 
-  _createClass(Object, [{
-    key: "draw",
-    value: function draw() {
-      c.beginPath();
-      c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-      c.fillStyle = this.color;
-      c.fill();
-      c.closePath();
+  this.draw = function () {
+    c.beginPath();
+    c.arc(_this.x, _this.y, _this.radius, 0, Math.PI * 2, false);
+    c.strokeStyle = _this.color;
+    c.stroke();
+    c.closePath();
+  };
+
+  this.update = function (particles) {
+    _this.draw(); // Collision detection
+
+
+    for (var i = 0; i < particles.length; i++) {
+      if (_this === particles[i]) continue;
+
+      if (_utils__WEBPACK_IMPORTED_MODULE_0___default.a.distance(_this.x, _this.y, particles[i].x, particles[i].y) - _this.radius * 2 < 0) {// console.log("has collided");
+      }
     }
-  }, {
-    key: "update",
-    value: function update() {
-      this.draw();
+
+    if (_this.x - _this.radius <= 0 || _this.x + _this.radius >= innerWidth) {
+      _this.velocity.x = -_this.velocity.x;
     }
-  }]);
 
-  return Object;
-}(); // Implementation
+    if (_this.y - _this.radius <= 0 || _this.y + _this.radius >= innerHeight) {
+      _this.velocity.y = -_this.velocity.y;
+    }
+
+    _this.x += _this.velocity.x;
+    _this.y += _this.velocity.y;
+  };
+} // Implementation
 
 
-var objects;
+var particles;
 
 function init() {
-  objects = [];
+  particles = [];
 
-  for (var i = 0; i < 400; i++) {// objects.push()
+  for (var i = 0; i < 5; i++) {
+    var radius = 80;
+    var x = _utils__WEBPACK_IMPORTED_MODULE_0___default.a.randomIntFromRange(radius, canvas.width - radius);
+    var y = _utils__WEBPACK_IMPORTED_MODULE_0___default.a.randomIntFromRange(radius, canvas.height - radius);
+    var color = "blue";
+
+    if (i !== 0) {
+      for (var j = 0; j < particles.length; j++) {
+        // Check if particles are overlapping
+        if (_utils__WEBPACK_IMPORTED_MODULE_0___default.a.distance(x, y, particles[j].x, particles[j].y) - radius * 2 < 0) {
+          x = _utils__WEBPACK_IMPORTED_MODULE_0___default.a.randomIntFromRange(radius, canvas.width - radius);
+          y = _utils__WEBPACK_IMPORTED_MODULE_0___default.a.randomIntFromRange(radius, canvas.height - radius);
+        }
+      }
+    }
+
+    particles.push(new Particle(x, y, radius, color));
   }
 } // Animation Loop
 
@@ -167,9 +192,9 @@ function init() {
 function animate() {
   requestAnimationFrame(animate);
   c.clearRect(0, 0, canvas.width, canvas.height);
-  c.fillText('HTML CANVAS BOILERPLATE', mouse.x, mouse.y); // objects.forEach(object => {
-  //  object.update()
-  // })
+  particles.forEach(function (particle) {
+    particle.update(particles);
+  });
 }
 
 init();
